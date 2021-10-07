@@ -114,7 +114,7 @@ controls.target.set(0, 0.75, 0);
 controls.enableDamping = true;
 
 // Control Keys
-const keyPressed = {};
+const keysPressed = {};
 const keyDisplayQueue = new KeyDisplay();
 document.addEventListener(
   "keydown",
@@ -123,17 +123,16 @@ document.addEventListener(
     if (event.shiftKey && characterControls) {
       characterControls.switchRunToggle();
     } else {
-      keyPressed[event.key.toLowerCase()] = true;
+      keysPressed[event.key.toLowerCase()] = true;
     }
   },
   false
 );
-
 document.addEventListener(
   "keyup",
   (event) => {
     keyDisplayQueue.up(event.key);
-    keyPressed[event.key.toLowerCase()] = false;
+    keysPressed[event.key.toLowerCase()] = false;
   },
   false
 );
@@ -151,6 +150,11 @@ let mixer = null;
 let characterControls;
 gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
   const model = gltf.scene;
+
+  model.traverse(function (object) {
+    if (object.isMesh) object.castShadow = true;
+  });
+
   model.scale.set(0.025, 0.025, 0.025);
   scene.add(model);
 
@@ -162,7 +166,9 @@ gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
     .forEach((a) => {
       animationMap.set(a.name, mixer.clipAction(a));
     });
-  characterControls = new CharacterControls(model, mixer, animationMap, controls, camera, "Idle");
+  characterControls = new CharacterControls(model, mixer, animationMap, controls, camera, "Survey");
+  const action = mixer.clipAction(gltf.animations[1]);
+  action.play();
 });
 
 /**
@@ -176,37 +182,20 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor(0xffffff, 0); // second param is opacity, 0 => transparent
+renderer.setClearColor(0xffffff, 0);
 
 /**
  * Animate
  */
 const clock = new THREE.Clock();
-let previousTime = 0;
-
-const tick = () => {
-  // const elapsedTime = clock.getElapsedTime();
-  // const deltaTime = elapsedTime - previousTime;
-  // previousTime = elapsedTime;
-
+function animate() {
   let mixerUpdateDelta = clock.getDelta();
   if (characterControls) {
-    characterControls.update(mixerUpdateDelta, keyPressed);
+    characterControls.update(mixerUpdateDelta, keysPressed);
   }
   controls.update();
-
-  // if (mixer) {
-  //   mixer.update(deltaTime);
-  // }
-
-  // Update controls
-  // controls.update();
-
-  // Render
   renderer.render(scene, camera);
-
-  // Call tick again on the next frame
-  window.requestAnimationFrame(tick);
-};
-
-tick();
+  requestAnimationFrame(animate);
+}
+document.body.appendChild(renderer.domElement);
+animate();
