@@ -11,6 +11,11 @@ body {
   overflow: hidden;
 }
 
+body {
+  display: flex;
+  justify-content: center;
+}
+
 .webgl {
   position: fixed;
   top: 0;
@@ -23,5 +28,9 @@ body {
 .point {
   position: absolute;
   z-index: 1;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.589);
+  top: 20%;
+  font-size: 1.5em;
+  border-radius: 30px;
+  padding: 10px 30px;
 }

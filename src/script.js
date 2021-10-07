@@ -52,14 +52,14 @@ const scene = new THREE.Scene();
 /**
  * Sphere
  */
-const sphere = new THREE.Mesh(
-  new THREE.SphereGeometry(2, 32, 16),
-  new THREE.MeshBasicMaterial({ color: 0x6699ff })
-);
-sphere.position.y = -2;
-sphere.receiveShadow = true;
-sphere.castShadow = true;
-scene.add(sphere);
+// const sphere = new THREE.Mesh(
+//   new THREE.SphereGeometry(2, 32, 16),
+//   new THREE.MeshBasicMaterial({ color: 0x6699ff })
+// );
+// sphere.position.y = -2;
+// sphere.receiveShadow = true;
+// sphere.castShadow = true;
+// scene.add(sphere);
 
 /**
  * Lights
@@ -137,6 +137,22 @@ document.addEventListener(
   false
 );
 
+// create an AudioListener and add it to the camera
+const listener = new THREE.AudioListener();
+camera.add(listener);
+
+// create a global audio source
+const sound = new THREE.Audio(listener);
+
+// load a sound and set it as the Audio object's buffer
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load("music/bensound-smile.mp3", function (buffer) {
+  sound.setBuffer(buffer);
+  sound.setLoop(true);
+  sound.setVolume(0.3);
+  sound.play();
+});
+
 /**
  * Model with animations
  */
@@ -170,6 +186,43 @@ gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
   const action = mixer.clipAction(gltf.animations[1]);
   action.play();
 });
+
+/**
+ * Particles
+ */
+const textureLoader = new THREE.TextureLoader();
+const particleTexture = textureLoader.load("/textures/particles/9.png");
+
+// Geometry
+const particlesGeometry = new THREE.BufferGeometry();
+const count = 20000;
+
+const positions = new Float32Array(count * 3); // Multiply by 3 because each position is composed of 3 value (x, y, z)
+const colors = new Float32Array(count * 3);
+
+for (let i = 0; i < count * 3; i++) {
+  positions[i] = (Math.random() - 0.5) * 10; // between -0.5 and +0.5
+  colors[i] = Math.random();
+}
+
+particlesGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+particlesGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+// Material
+const particleMaterial = new THREE.PointsMaterial({
+  size: 0.1,
+  sizeAttenuation: true,
+  map: particleTexture,
+  transparent: true,
+  alphaMap: particleTexture,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  vertexColors: true,
+});
+
+// Points
+const particles = new THREE.Points(particlesGeometry, particleMaterial);
+scene.add(particles);
 
 /**
  * Renderer
