@@ -4,6 +4,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "dat.gui";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+
 import { KeyDisplay } from "./utils";
 import { CharacterControls } from "./characterControls";
 
@@ -64,7 +66,7 @@ const scene = new THREE.Scene();
 /**
  * Lights
  */
-const ambientLight = new THREE.AmbientLight(0xff5577, 0.8);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 scene.add(ambientLight);
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
@@ -154,40 +156,6 @@ audioLoader.load("music/bensound-smile.mp3", function (buffer) {
 });
 
 /**
- * Model with animations
- */
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath("/draco/");
-
-const gltfLoader = new GLTFLoader();
-gltfLoader.setDRACOLoader(dracoLoader);
-
-let mixer = null;
-let characterControls;
-gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
-  const model = gltf.scene;
-
-  model.traverse(function (object) {
-    if (object.isMesh) object.castShadow = true;
-  });
-
-  model.scale.set(0.025, 0.025, 0.025);
-  scene.add(model);
-
-  const gltfAnimations = gltf.animations;
-  mixer = new THREE.AnimationMixer(model);
-  const animationMap = new Map();
-  gltfAnimations
-    .filter((a) => a.name != "Survey")
-    .forEach((a) => {
-      animationMap.set(a.name, mixer.clipAction(a));
-    });
-  characterControls = new CharacterControls(model, mixer, animationMap, controls, camera, "Survey");
-  const action = mixer.clipAction(gltf.animations[1]);
-  action.play();
-});
-
-/**
  * Particles
  */
 const textureLoader = new THREE.TextureLoader();
@@ -223,6 +191,52 @@ const particleMaterial = new THREE.PointsMaterial({
 // Points
 const particles = new THREE.Points(particlesGeometry, particleMaterial);
 scene.add(particles);
+
+/**
+ * Model with animations
+ */
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath("/draco/");
+
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
+
+let mixer = null;
+let characterControls;
+gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
+  const model = gltf.scene;
+
+  model.traverse(function (object) {
+    if (object.isMesh) object.castShadow = true;
+  });
+
+  model.scale.set(0.02, 0.02, 0.02);
+  scene.add(model);
+
+  const gltfAnimations = gltf.animations;
+  mixer = new THREE.AnimationMixer(model);
+  const animationMap = new Map();
+  gltfAnimations
+    .filter((a) => a.name != "Survey")
+    .forEach((a) => {
+      animationMap.set(a.name, mixer.clipAction(a));
+    });
+  characterControls = new CharacterControls(model, mixer, animationMap, controls, camera, "Survey");
+  const action = mixer.clipAction(gltf.animations[1]);
+  action.play();
+});
+
+// Planets
+gltfLoader.load("/models/little_prince/scene.gltf", (gltf) => {
+  const model = gltf.scene;
+
+  model.traverse(function (object) {
+    if (object.isMesh) object.castShadow = true;
+  });
+
+  // model.scale.set(0.01, 0.01, 0.01);dd
+  scene.add(model);
+});
 
 /**
  * Renderer

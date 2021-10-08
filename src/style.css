@@ -10,11 +10,11 @@ html,
 body {
   overflow: hidden;
 }
-
+/* 
 body {
   display: flex;
   justify-content: center;
-}
+} */
 
 .webgl {
   position: fixed;
@@ -29,7 +29,8 @@ body {
   position: absolute;
   z-index: 1;
   background-color: rgba(255, 255, 255, 0.589);
-  top: 20%;
+  top: 5%;
+  left: 5%;
   font-size: 1.5em;
   border-radius: 30px;
   padding: 10px 30px;
