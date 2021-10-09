@@ -6,7 +6,6 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { KeyDisplay } from "./utils";
 import { CharacterControls } from "./characterControls";
-import { gsap } from "gsap";
 
 /**
  * Loaders
@@ -20,8 +19,6 @@ const textureLoader = new THREE.TextureLoader(loadingManager);
 /**
  * Base
  */
-// Debug
-const gui = new dat.GUI();
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
@@ -105,6 +102,10 @@ document.addEventListener(
   false
 );
 
+/**
+ * Audio
+ */
+
 // create an AudioListener and add it to the camera
 const listener = new THREE.AudioListener();
 camera.add(listener);
@@ -128,13 +129,13 @@ const particleTexture = textureLoader.load("/textures/particles/9.png");
 
 // Geometry
 const particlesGeometry = new THREE.BufferGeometry();
-const count = 20000;
+const count = 2000000;
 
 const positions = new Float32Array(count * 3); // Multiply by 3 because each position is composed of 3 value (x, y, z)
 const colors = new Float32Array(count * 3);
 
 for (let i = 0; i < count * 3; i++) {
-  positions[i] = (Math.random() - 0.5) * 10; // between -0.5 and +0.5
+  positions[i] = (Math.random() - 0.5) * 200; // between -0.5 and +0.5
   colors[i] = Math.random();
 }
 
@@ -143,7 +144,7 @@ particlesGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
 // Material
 const particleMaterial = new THREE.PointsMaterial({
-  size: 0.1,
+  size: 0.5,
   sizeAttenuation: true,
   map: particleTexture,
   transparent: true,
@@ -199,7 +200,9 @@ gltfLoader.load("/models/little_prince/scene.gltf", (gltf) => {
     if (object.isMesh) object.castShadow = true;
   });
 
-  // model.scale.set(0.01, 0.01, 0.01);dd
+  model.position.set(30, 1, -10);
+  model.rotateY(30);
+
   scene.add(model);
 });
 
