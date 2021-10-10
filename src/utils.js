@@ -35,8 +35,9 @@ var KeyDisplay = /** @class */ (function () {
       v.style.zIndex = "1";
       v.style.border = "3px solid #fff";
       v.style.borderRadius = "20px";
-      v.style.padding = "0 10px";
+      v.style.padding = "0 20px";
       v.style.margin = "0 20px";
+      v.style.transform = "perspective(10px) rotateX(1deg)";
       v.textContent = k;
     });
     this.updatePosition();
@@ -54,7 +55,7 @@ var KeyDisplay = /** @class */ (function () {
     this.map.get(exports.A).style.left = 250 + "px";
     this.map.get(exports.S).style.left = 350 + "px";
     this.map.get(exports.D).style.left = 450 + "px";
-    this.map.get(exports.SHIFT).style.left = 50 + "px";
+    this.map.get(exports.SHIFT).style.left = 20 + "px";
   };
   KeyDisplay.prototype.down = function (key) {
     if (this.map.get(key.toLowerCase())) {
