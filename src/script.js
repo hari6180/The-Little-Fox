@@ -1,7 +1,6 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import * as dat from "dat.gui";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { KeyDisplay } from "./utils";
@@ -27,6 +26,14 @@ const canvas = document.querySelector("canvas.webgl");
 const scene = new THREE.Scene();
 
 /**
+ * Sizes
+ */
+const sizes = {
+  width: window.innerWidth,
+  height: window.innerHeight,
+};
+
+/**
  * Lights
  */
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
@@ -44,28 +51,6 @@ directionalLight.position.set(5, 5, 5);
 scene.add(directionalLight);
 
 /**
- * Sizes
- */
-const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-};
-
-window.addEventListener("resize", () => {
-  // Update sizes
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
-
-  // Update camera
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
-
-  // Update renderer
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-});
-
-/**
  * Camera
  */
 // Base camera
@@ -77,6 +62,26 @@ scene.add(camera);
 const controls = new OrbitControls(camera, canvas);
 controls.target.set(0, 0.75, 0);
 controls.enableDamping = true;
+
+/**
+ * Audio
+ */
+
+// create an AudioListener and add it to the camera
+const listener = new THREE.AudioListener();
+camera.add(listener);
+
+// create a global audio source
+const sound = new THREE.Audio(listener);
+
+// load a sound and set it as the Audio object's buffer
+const audioLoader = new THREE.AudioLoader(loadingManager);
+audioLoader.load("music/bensound-smile.mp3", function (buffer) {
+  sound.setBuffer(buffer);
+  sound.setLoop(true);
+  sound.setVolume(0.3);
+  sound.play();
+});
 
 // Control Keys
 const keysPressed = {};
@@ -101,26 +106,6 @@ document.addEventListener(
   },
   false
 );
-
-/**
- * Audio
- */
-
-// create an AudioListener and add it to the camera
-const listener = new THREE.AudioListener();
-camera.add(listener);
-
-// create a global audio source
-const sound = new THREE.Audio(listener);
-
-// load a sound and set it as the Audio object's buffer
-const audioLoader = new THREE.AudioLoader(loadingManager);
-audioLoader.load("music/bensound-smile.mp3", function (buffer) {
-  sound.setBuffer(buffer);
-  sound.setLoop(true);
-  sound.setVolume(0.3);
-  sound.play();
-});
 
 /**
  * Particles
@@ -157,6 +142,7 @@ const particleMaterial = new THREE.PointsMaterial({
 // Points
 const particles = new THREE.Points(particlesGeometry, particleMaterial);
 scene.add(particles);
+controls.update();
 
 /**
  * Model with animations
@@ -177,6 +163,7 @@ gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
   });
 
   model.scale.set(0.02, 0.02, 0.02);
+  model.position.set(0, 0, 0);
   scene.add(model);
 
   const gltfAnimations = gltf.animations;
@@ -190,6 +177,14 @@ gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
   characterControls = new CharacterControls(model, mixer, animationMap, controls, camera, "Survey");
   const action = mixer.clipAction(gltf.animations[1]);
   action.play();
+
+  const reset = document.querySelector("#reset");
+  reset.addEventListener("click", () => {
+    model.position.set(0, 0, 0);
+    camera.position.set(2, 2, 6);
+    controls.target.set(0, 0.75, 0);
+    controls.update();
+  });
 });
 
 // Planets
@@ -204,6 +199,7 @@ gltfLoader.load("/models/little_prince/scene.gltf", (gltf) => {
   model.rotateY(30);
 
   scene.add(model);
+  controls.update();
 });
 
 /**
@@ -220,6 +216,24 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0xffffff, 0);
 
 /**
+ * Resize
+ */
+
+window.addEventListener("resize", () => {
+  // Update sizes
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+
+  // Update camera
+  camera.aspect = sizes.width / sizes.height;
+  camera.updateProjectionMatrix();
+
+  // Update renderer
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+/**
  * Animate
  */
 const clock = new THREE.Clock();
@@ -227,10 +241,10 @@ function animate() {
   let mixerUpdateDelta = clock.getDelta();
   if (characterControls) {
     characterControls.update(mixerUpdateDelta, keysPressed);
+    controls.update();
   }
+  requestAnimationFrame(animate);
   controls.update();
   renderer.render(scene, camera);
-  requestAnimationFrame(animate);
 }
-document.body.appendChild(renderer.domElement);
 animate();
