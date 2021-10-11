@@ -9,9 +9,14 @@ import { CharacterControls } from "./characterControls";
 /**
  * Loaders
  */
+let sceneReady = false;
+
 const loadingManager = new THREE.LoadingManager(() => {
   const loadingScreen = document.getElementById("loading-screen");
   loadingScreen.classList.add("fade-out");
+  window.setTimeout(() => {
+    sceneReady = true;
+  }, 2000);
 });
 const textureLoader = new THREE.TextureLoader(loadingManager);
 
@@ -214,6 +219,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0xffffff, 0);
+document.body.appendChild(renderer.domElement);
 
 /**
  * Resize
@@ -233,10 +239,18 @@ window.addEventListener("resize", () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
+const point = {
+  position: new THREE.Vector3(0, 0, 0), //
+  element: document.querySelector(".point"),
+};
+
+const raycaster = new THREE.Raycaster();
+
 /**
  * Animate
  */
 const clock = new THREE.Clock();
+
 function animate() {
   let mixerUpdateDelta = clock.getDelta();
   if (characterControls) {
@@ -246,5 +260,15 @@ function animate() {
   requestAnimationFrame(animate);
   controls.update();
   renderer.render(scene, camera);
+
+  if (sceneReady) {
+    const screenPosition = point.position.clone();
+    screenPosition.project(camera);
+    raycaster.setFromCamera(screenPosition, camera);
+    const translateX = screenPosition.x * sizes.width * 0.5;
+    const translateY = -screenPosition.y * sizes.height * 0.5;
+    point.element.style.transform = `translateX(${translateX}px) translateY(${translateY}px)`;
+  }
 }
+
 animate();
