@@ -261,13 +261,23 @@ function animate() {
   controls.update();
   renderer.render(scene, camera);
 
+  const matrix = new THREE.Matrix4();
+
   if (sceneReady) {
     const screenPosition = point.position.clone();
     screenPosition.project(camera);
+    screenPosition.applyMatrix4(matrix);
+
     raycaster.setFromCamera(screenPosition, camera);
     const translateX = screenPosition.x * sizes.width * 0.5;
     const translateY = -screenPosition.y * sizes.height * 0.5;
-    point.element.style.transform = `translateX(${translateX}px) translateY(${translateY}px)`;
+    const translateZ = screenPosition.z * sizes.width * 0.5;
+
+    // point.element.style.transform = `translate3d(${translateX}px, ${translateY}px, ${translateZ}px)`;
+    point.element.style.transform = `matrix3d(1.935003, -0.297076, 0, -0.000606, 
+      -1.200662, 1.733048, 0, -0.00443, 
+      0, 0, 1, 0, 
+      148, 146, 0, 1)`;
   }
 }
 
