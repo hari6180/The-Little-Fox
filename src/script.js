@@ -5,6 +5,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { KeyDisplay } from "./utils";
 import { CharacterControls } from "./characterControls";
+import { CSS3DRenderer, CSS3DObject } from "./CSS3DRenderer";
 
 /**
  * Loaders
@@ -61,10 +62,31 @@ scene.add(directionalLight);
 // Base camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
 camera.position.set(2, 2, 6);
+camera.lookAt(scene.position);
 scene.add(camera);
 
+/**
+ * Renderer
+ */
+const renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  alpha: true,
+  antialias: true,
+});
+renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0xffffff, 0);
+document.body.appendChild(renderer.domElement);
+
+// create a CSS3DRenderer
+const renderer2 = new CSS3DRenderer();
+renderer2.setSize(window.innerWidth, window.innerHeight);
+renderer2.domElement.style.position = "absolute";
+renderer2.domElement.style.top = 0;
+document.body.appendChild(renderer2.domElement);
+
 // Controls
-const controls = new OrbitControls(camera, canvas);
+const controls = new OrbitControls(camera, renderer2.domElement);
 controls.target.set(0, 0.75, 0);
 controls.enableDamping = true;
 
@@ -160,6 +182,7 @@ gltfLoader.setDRACOLoader(dracoLoader);
 
 let mixer = null;
 let characterControls;
+
 gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
   const model = gltf.scene;
 
@@ -208,43 +231,36 @@ gltfLoader.load("/models/little_prince/scene.gltf", (gltf) => {
 });
 
 /**
- * Renderer
- */
-const renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
-  alpha: true,
-});
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.setSize(sizes.width, sizes.height);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor(0xffffff, 0);
-document.body.appendChild(renderer.domElement);
-
-/**
  * Resize
  */
 
 window.addEventListener("resize", () => {
-  // Update sizes
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
+  camera.aspect = window.innerWidth / window.innerHeight;
 
-  // Update camera
-  camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
 
-  // Update renderer
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  renderer2.setSize(window.innerWidth, window.innerHeight);
 });
 
-const point = {
-  position: new THREE.Vector3(0, 0, 0), //
-  element: document.querySelector(".point"),
-};
+let scene2 = new THREE.Scene();
 
-const raycaster = new THREE.Raycaster();
+const element = document.createElement("div");
+element.innerHTML = "(0,0,0)";
+element.style.fontSize = "10px";
+element.style.width = "50px";
+element.style.height = "50px";
+element.style.opacity = 1;
+element.style.background = new THREE.Color(Math.random() * 0xffffff).getStyle();
+
+const object = new CSS3DObject(element);
+object.position.x = 0;
+object.position.y = 0;
+object.position.z = 0;
+object.scale.x = 0.05;
+object.scale.y = 0.05;
+scene2.add(object);
 
 /**
  * Animate
@@ -259,26 +275,9 @@ function animate() {
   }
   requestAnimationFrame(animate);
   controls.update();
+
   renderer.render(scene, camera);
-
-  const matrix = new THREE.Matrix4();
-
-  if (sceneReady) {
-    const screenPosition = point.position.clone();
-    screenPosition.project(camera);
-    screenPosition.applyMatrix4(matrix);
-
-    raycaster.setFromCamera(screenPosition, camera);
-    const translateX = screenPosition.x * sizes.width * 0.5;
-    const translateY = -screenPosition.y * sizes.height * 0.5;
-    const translateZ = screenPosition.z * sizes.width * 0.5;
-
-    // point.element.style.transform = `translate3d(${translateX}px, ${translateY}px, ${translateZ}px)`;
-    point.element.style.transform = `matrix3d(1.935003, -0.297076, 0, -0.000606, 
-      -1.200662, 1.733048, 0, -0.00443, 
-      0, 0, 1, 0, 
-      148, 146, 0, 1)`;
-  }
+  renderer2.render(scene2, camera);
 }
 
 animate();
