@@ -5,7 +5,6 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { KeyDisplay } from "./utils";
 import { CharacterControls } from "./characterControls";
-import { CSS3DRenderer, CSS3DObject } from "./CSS3DRenderer";
 
 /**
  * Loaders
@@ -76,17 +75,9 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0xffffff, 0);
 document.body.appendChild(renderer.domElement);
 
-// create a CSS3DRenderer
-// const renderer2 = new CSS3DRenderer();
-// renderer2.setSize(window.innerWidth, window.innerHeight);
-// renderer2.domElement.style.position = "absolute";
-// renderer2.domElement.style.top = 0;
-// document.body.appendChild(renderer2.domElement);
-
-// Controls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 0.75, 0);
-controls.enableDamping = true;
+const orbitControls = new OrbitControls(camera, renderer.domElement);
+orbitControls.enableZoom = true;
+orbitControls.zoomSpeed = 2;
 
 /**
  * Audio
@@ -132,6 +123,8 @@ document.addEventListener(
   false
 );
 
+const object = new THREE.Object3D();
+
 /**
  * Particles
  */
@@ -166,8 +159,8 @@ const particleMaterial = new THREE.PointsMaterial({
 
 // Points
 const particles = new THREE.Points(particlesGeometry, particleMaterial);
-scene.add(particles);
-controls.update();
+object.add(particles);
+orbitControls.update();
 
 /**
  * Model with animations
@@ -190,7 +183,7 @@ gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
 
   model.scale.set(0.02, 0.02, 0.02);
   model.position.set(0, 0, 0);
-  scene.add(model);
+  object.add(model);
 
   const gltfAnimations = gltf.animations;
   mixer = new THREE.AnimationMixer(model);
@@ -200,7 +193,14 @@ gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
     .forEach((a) => {
       animationMap.set(a.name, mixer.clipAction(a));
     });
-  characterControls = new CharacterControls(model, mixer, animationMap, controls, camera, "Survey");
+  characterControls = new CharacterControls(
+    model,
+    mixer,
+    animationMap,
+    orbitControls,
+    camera,
+    "Survey"
+  );
   const action = mixer.clipAction(gltf.animations[1]);
   action.play();
 
@@ -208,8 +208,8 @@ gltfLoader.load("/models/Fox/glTF/Fox.gltf", (gltf) => {
   reset.addEventListener("click", () => {
     model.position.set(0, 0, 0);
     camera.position.set(2, 2, 6);
-    controls.target.set(0, 0.75, 0);
-    controls.update();
+    orbitControls.target.set(0, 0.75, 0);
+    orbitControls.update();
   });
 });
 
@@ -224,9 +224,15 @@ gltfLoader.load("/models/little_prince/scene.gltf", (gltf) => {
   model.position.set(30, 1, -10);
   model.rotateY(30);
 
-  scene.add(model);
-  controls.update();
+  object.add(model);
+  orbitControls.update();
 });
+
+const objectX = 0;
+const objectY = 0;
+const objectZ = 0;
+object.position.set(objectX, objectY, objectZ);
+scene.add(object);
 
 /**
  * Resize
@@ -238,27 +244,29 @@ window.addEventListener("resize", () => {
   camera.updateProjectionMatrix();
 
   renderer.setSize(window.innerWidth, window.innerHeight);
-
-  // renderer2.setSize(window.innerWidth, window.innerHeight);
 });
 
-// let scene2 = new THREE.Scene();
+function Point3DToScreen2D(point3D, camera) {
+  let p = point3D.clone();
+  camera.updateMatrix();
+  camera.updateMatrixWorld();
+  camera.matrixWorldInverse.getInverse(camera.matrixWorld);
 
-// const element = document.createElement("div");
-// element.innerHTML = "(0,0,0)";
-// element.style.fontSize = "10px";
-// element.style.width = "50px";
-// element.style.height = "50px";
-// element.style.opacity = 1;
-// element.style.background = new THREE.Color(Math.random() * 0xffffff).getStyle();
+  let frustum = new THREE.Frustum();
+  frustum.setFromMatrix(
+    new THREE.Matrix4().multiply(camera.projectionMatrix, camera.matrixWorldInverse)
+  );
 
-// const object = new CSS3DObject(element);
-// object.position.x = 0;
-// object.position.y = 0;
-// object.position.z = 0;
-// object.scale.x = 0.05;
-// object.scale.y = 0.05;
-// scene2.add(object);
+  if (frustum.containsPoint(p)) {
+    let vector = p.project(camera);
+    vector.x = ((vector.x + 1) / 2) * window.innerWidth;
+    vector.y = (-(vector.y - 1) / 2) * window.innerHeight;
+
+    return vector;
+  } else {
+    return false;
+  }
+}
 
 /**
  * Animate
@@ -269,13 +277,27 @@ function animate() {
   let mixerUpdateDelta = clock.getDelta();
   if (characterControls) {
     characterControls.update(mixerUpdateDelta, keysPressed);
-    controls.update();
   }
   requestAnimationFrame(animate);
-  controls.update();
+  orbitControls.update();
+
+  var tmpV = Point3DToScreen2D(new THREE.Vector3(0, 0, 0), camera);
+  if (tmpV) {
+    document
+      .querySelector(".objects")
+      .setAttribute(
+        "style",
+        "display:block;transform:translate(" +
+          tmpV.x +
+          "px," +
+          tmpV.y +
+          "px) translateZ(0px) translate(-32px, -32px) rotate(0deg) translate(0px, 0px) scale(1, 1) translate(0px, 0px); transform-origin: 50% 50% 0;"
+      );
+  } else {
+    document.querySelector(".objects").style.display = "none";
+  }
 
   renderer.render(scene, camera);
-  // renderer2.render(scene2, camera);
 }
 
 animate();

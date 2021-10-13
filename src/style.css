@@ -178,3 +178,14 @@ body {
 .point:hover .text {
   opacity: 1;
 }
+
+.objects {
+  background-color: #9370db;
+  text-align: center;
+  line-height: 66px;
+  height: 66px;
+  width: 66px;
+  position: absolute;
+  z-index: 1;
+  cursor: pointer;
+}
