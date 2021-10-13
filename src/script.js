@@ -70,19 +70,21 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
 });
 renderer.setSize(sizes.width, sizes.height);
+renderer.domElement.style.position = "absolute";
+renderer.domElement.style.top = 0;
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor(0xffffff, 0);
 document.body.appendChild(renderer.domElement);
 
 // create a CSS3DRenderer
-const renderer2 = new CSS3DRenderer();
-renderer2.setSize(window.innerWidth, window.innerHeight);
-renderer2.domElement.style.position = "absolute";
-renderer2.domElement.style.top = 0;
-document.body.appendChild(renderer2.domElement);
+// const renderer2 = new CSS3DRenderer();
+// renderer2.setSize(window.innerWidth, window.innerHeight);
+// renderer2.domElement.style.position = "absolute";
+// renderer2.domElement.style.top = 0;
+// document.body.appendChild(renderer2.domElement);
 
 // Controls
-const controls = new OrbitControls(camera, renderer2.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 0.75, 0);
 controls.enableDamping = true;
 
@@ -237,26 +239,26 @@ window.addEventListener("resize", () => {
 
   renderer.setSize(window.innerWidth, window.innerHeight);
 
-  renderer2.setSize(window.innerWidth, window.innerHeight);
+  // renderer2.setSize(window.innerWidth, window.innerHeight);
 });
 
-let scene2 = new THREE.Scene();
+// let scene2 = new THREE.Scene();
 
-const element = document.createElement("div");
-element.innerHTML = "(0,0,0)";
-element.style.fontSize = "10px";
-element.style.width = "50px";
-element.style.height = "50px";
-element.style.opacity = 1;
-element.style.background = new THREE.Color(Math.random() * 0xffffff).getStyle();
+// const element = document.createElement("div");
+// element.innerHTML = "(0,0,0)";
+// element.style.fontSize = "10px";
+// element.style.width = "50px";
+// element.style.height = "50px";
+// element.style.opacity = 1;
+// element.style.background = new THREE.Color(Math.random() * 0xffffff).getStyle();
 
-const object = new CSS3DObject(element);
-object.position.x = 0;
-object.position.y = 0;
-object.position.z = 0;
-object.scale.x = 0.05;
-object.scale.y = 0.05;
-scene2.add(object);
+// const object = new CSS3DObject(element);
+// object.position.x = 0;
+// object.position.y = 0;
+// object.position.z = 0;
+// object.scale.x = 0.05;
+// object.scale.y = 0.05;
+// scene2.add(object);
 
 /**
  * Animate
@@ -273,7 +275,7 @@ function animate() {
   controls.update();
 
   renderer.render(scene, camera);
-  renderer2.render(scene2, camera);
+  // renderer2.render(scene2, camera);
 }
 
 animate();
