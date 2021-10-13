@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@200&display=swap");
 
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
   font-family: "Roboto Mono", monospace;
@@ -9,12 +10,15 @@
 html,
 body {
   overflow: hidden;
+  width: 100vw;
+  height: 100vh;
 }
 
-.webgl {
-  position: fixed;
+.scene {
+  position: absolute;
   top: 0;
   left: 0;
+  height: 100%;
   outline: none;
   background: rgb(238, 174, 202);
   background: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
@@ -129,7 +133,7 @@ body {
   position: absolute;
   top: 30%;
   left: 30%;
-  z-index: 1;
+  z-index: 2;
 }
 
 .point .label {

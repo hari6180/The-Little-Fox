@@ -25,9 +25,6 @@ const textureLoader = new THREE.TextureLoader(loadingManager);
  * Base
  */
 
-// Canvas
-const canvas = document.querySelector("canvas.webgl");
-
 // Scene
 const scene = new THREE.Scene();
 
@@ -69,7 +66,6 @@ scene.add(camera);
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
   alpha: true,
   antialias: true,
 });
