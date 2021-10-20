@@ -14,3 +14,9 @@ npm run dev
 # Build for production in the dist/ directory
 npm run build
 ```
+
+### How to play?
+<ul>
+  <li>w,a,s,d - move</li>
+  <li>shift - dash</li>
+  </ul>
