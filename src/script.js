@@ -246,6 +246,8 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+let raycaster = new THREE.Raycaster();
+
 function Point3DToScreen2D(point3D, camera) {
   let p = point3D.clone();
   camera.updateMatrix();
@@ -281,21 +283,21 @@ function animate() {
   requestAnimationFrame(animate);
   orbitControls.update();
 
-  var tmpV = Point3DToScreen2D(new THREE.Vector3(0, 0, 0), camera);
-  if (tmpV) {
-    document
-      .querySelector(".objects")
-      .setAttribute(
-        "style",
-        "display:block;transform:translate(" +
-          tmpV.x +
-          "px," +
-          tmpV.y +
-          "px) translateZ(0px) translate(-32px, -32px) rotate(0deg) translate(0px, 0px) scale(1, 1) translate(0px, 0px); transform-origin: 50% 50% 0;"
-      );
-  } else {
-    document.querySelector(".objects").style.display = "none";
-  }
+  // var tmpV = Point3DToScreen2D(object.position, camera);
+  // if (tmpV) {
+  //   document.querySelector(".objects").setAttribute(
+  //     "style",
+  //     //   "display:block;transform:translate(" +
+  //     //     tmpV.x +
+  //     //     "px," +
+  //     //     tmpV.y +
+  //     //     "px) translateZ(0px) translate(-32px, -32px) rotate(0deg) translate(0px, 0px) scale(1, 1) translate(0px, 0px); transform-origin: 50% 50% 0;"
+  //     //
+  //     `display:block; left:${tmpV.x}px; top:${tmpV.y}px;`
+  //   );
+  // } else {
+  //   document.querySelector(".objects").style.display = "none";
+  // }
 
   renderer.render(scene, camera);
 }
